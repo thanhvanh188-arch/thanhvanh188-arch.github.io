@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>花山岩画数字博物馆</title>
+<style>
+  :root {
+    --bg-deep: #12100c;
+    --bg-panel: #1c1913;
+    --bg-card: #242019;
+    --gold: #c9a45c;
+    --gold-bright: #e8c884;
+    --gold-dim: rgba(201, 164, 92, 0.35);
+    --text-main: #ece5d8;
+    --text-sub: #a89d8a;
+    --serif: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background:
+      radial-gradient(1200px 500px at 50% -100px, rgba(201,164,92,0.08), transparent 70%),
+      var(--bg-deep);
+    color: var(--text-main);
+    font-family: var(--serif);
+    min-height: 100vh;
+  }
+
+  /* ===== 顶部 ===== */
+  header {
+    text-align: center;
+    padding: 52px 20px 34px;
+    border-bottom: 1px solid var(--gold-dim);
+    position: relative;
+  }
+  header::before, header::after {
+    content: "◆ ◆ ◆";
+    display: block;
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 12px;
+    opacity: 0.7;
+    margin-bottom: 22px;
+  }
+  h1 {
+    font-size: clamp(30px, 5vw, 52px);
+    font-weight: 700;
+    letter-spacing: 10px;
+    color: var(--gold-bright);
+    text-shadow: 0 0 24px rgba(201, 164, 92, 0.35);
+  }
+  .subtitle {
+    margin-top: 14px;
+    font-size: 14px;
+    letter-spacing: 4px;
+    color: var(--text-sub);
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 7px 22px;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    color: var(--gold-bright);
+    font-size: 14px;
+    letter-spacing: 3px;
+    background: linear-gradient(180deg, rgba(201,164,92,0.14), rgba(201,164,92,0.04));
+    box-shadow: 0 0 18px rgba(201,164,92,0.18) inset;
+  }
+  .badge .star { font-size: 15px; }
+
+  /* ===== 主体 ===== */
+  main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 44px 24px 60px;
+  }
+
+  /* ===== 展柜整体 ===== */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--gold-dim);
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(201,164,92,0.10), transparent 55%),
+      linear-gradient(180deg, #171310 0%, #1c1913 55%, #0f0c08 100%);
+    padding: 78px 56px 44px;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.65), inset 0 0 60px rgba(0,0,0,0.55);
+  }
+  /* 展柜内壁两侧的暗角 */
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.5), transparent 18%, transparent 82%, rgba(0,0,0,0.5));
+    pointer-events: none;
+    z-index: 1;
+  }
+  .hero .corner {
+    position: absolute;
+    width: 26px; height: 26px;
+    border-color: var(--gold);
+    border-style: solid;
+    border-width: 0;
+    z-index: 6;
+  }
+  .hero .corner.tl { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
+  .hero .corner.tr { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; }
+  .hero .corner.bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; }
+  .hero .corner.br { bottom: -1px; right: -1px; border-bottom-width: 2px; border-right-width: 2px; }
+
+  /* ===== 顶部射灯 ===== */
+  .spotlight {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+  }
+  /* 灯具外壳 */
+  .spotlight .lamp {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 64px; height: 20px;
+    background: linear-gradient(180deg, #3c3c40, #17171a 70%);
+    border: 1px solid #4a4a50;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+  }
+  /* 灯口暖光 */
+  .spotlight .lamp::after {
+    content: "";
+    position: absolute;
+    left: 10px; right: 10px; bottom: 2px;
+    height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, #ffe9bd, rgba(255,222,150,0.25) 70%, transparent);
+    box-shadow: 0 0 14px 4px rgba(255,222,150,0.55);
+  }
+  /* 锥形光束 */
+  .spotlight .beam {
+    position: absolute;
+    top: 18px; left: 50%;
+    transform: translateX(-50%);
+    width: 640px; max-width: 92%;
+    height: 72%;
+    background: linear-gradient(180deg, rgba(255,226,160,0.30), rgba(255,226,160,0.10) 55%, rgba(255,226,160,0) 100%);
+    clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%);
+    filter: blur(7px);
+    mix-blend-mode: screen;
+  }
+  /* 顶部光晕 */
+  .spotlight .glow {
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 420px; height: 300px;
+    background: radial-gradient(ellipse at center, rgba(255,226,160,0.35), rgba(255,226,160,0.08) 45%, transparent 70%);
+    filter: blur(4px);
+    mix-blend-mode: screen;
+  }
+
+  /* ===== 深色画框 ===== */
+  .frame {
+    position: relative;
+    z-index: 2;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 14px;
+    background: linear-gradient(135deg, #46341c 0%, #1a1207 30%, #2e2110 55%, #150e05 80%, #3a2a15 100%);
+    border: 1px solid #5a4423;
+    box-shadow:
+      inset 0 0 0 2px rgba(201,164,92,0.45),
+      inset 0 0 0 3px rgba(0,0,0,0.8),
+      0 26px 48px rgba(0,0,0,0.75),
+      0 8px 18px rgba(0,0,0,0.5);
+  }
+  .frame::before { /* 画框内侧金色细压线 */
+    content: "";
+    position: absolute;
+    inset: 9px;
+    border: 1px solid rgba(201,164,92,0.55);
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .hero-img-wrap {
+    position: relative;
+    overflow: hidden;
+    background: #0d0b08;
+    aspect-ratio: 16 / 9;
+    border: 1px solid rgba(0,0,0,0.9);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+  }
+  .hero-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.45s ease, transform 8s ease;
+  }
+  .hero-img-wrap img.zoom { transform: scale(1.04); }
+  .hero-img-wrap img.fading { opacity: 0; }
+
+  /* ===== 玻璃反光 ===== */
+  .glass {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background:
+      linear-gradient(112deg,
+        transparent 26%,
+        rgba(255,255,255,0.05) 33%,
+        rgba(255,255,255,0.13) 39%,
+        rgba(255,255,255,0.04) 44%,
+        transparent 54%),
+      linear-gradient(180deg, rgba(255,255,255,0.10), transparent 18%);
+  }
+  .glass::after { /* 玻璃面细微的第二道斜光 */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg,
+      transparent 62%,
+      rgba(255,255,255,0.05) 68%,
+      rgba(255,255,255,0.09) 71%,
+      transparent 77%);
+  }
+
+  .hero-caption {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 34px 18px 12px;
+    background: linear-gradient(transparent, rgba(10,8,5,0.85));
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--gold-bright);
+    text-align: right;
+    z-index: 2;
+  }
+  .hero-index {
+    position: absolute;
+    top: 14px; left: 14px;
+    padding: 4px 12px;
+    background: rgba(10,8,5,0.6);
+    border: 1px solid var(--gold-dim);
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    z-index: 2;
+  }
+
+  /* ===== 展柜台座 ===== */
+  .pedestal {
+    position: relative;
+    z-index: 2;
+    max-width: 620px;
+    margin: 34px auto 0;
+  }
+  .ped-top { /* 台座顶板 */
+    height: 12px;
+    margin: 0 -14px;
+    background: linear-gradient(180deg, #4a3a22, #2b2113);
+    border: 1px solid #5a4423;
+    border-bottom: none;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(232,200,132,0.35);
+  }
+  .ped-body {
+    position: relative;
+    height: 58px;
+    background:
+      linear-gradient(180deg, #241b0f 0%, #17110a 60%, #100b06 100%);
+    border: 1px solid #3d2f19;
+    border-top: 1px solid rgba(201,164,92,0.4);
+    box-shadow: inset 0 14px 22px rgba(0,0,0,0.5), 0 18px 30px rgba(0,0,0,0.6);
+  }
+  /* 台座上的铜牌 */
+  .ped-plaque {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 5px 20px;
+    background: linear-gradient(160deg, #caa55e, #8a6a33 60%, #b8934f);
+    color: #241a08;
+    font-size: 12px;
+    letter-spacing: 4px;
+    border: 1px solid #6e5426;
+    border-radius: 2px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.55), inset 0 1px 1px rgba(255,240,200,0.6);
+    white-space: nowrap;
+  }
+  /* 台座落地的光斑与阴影 */
+  .pedestal::after {
+    content: "";
+    position: absolute;
+    left: 50%; bottom: -16px;
+    transform: translateX(-50%);
+    width: 82%; height: 26px;
+    background: radial-gradient(ellipse at center, rgba(255,226,160,0.14), rgba(0,0,0,0.5) 60%, transparent 75%);
+    filter: blur(3px);
+    z-index: -1;
+  }
+
+  /* ===== 上一张 / 下一张切换按钮 ===== */
+  .nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    background: linear-gradient(180deg, rgba(36,30,20,0.92), rgba(18,14,8,0.92));
+    color: var(--gold-bright);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    user-select: none;
+  }
+  .nav-btn:hover {
+    background: linear-gradient(180deg, rgba(201,164,92,0.28), rgba(120,90,40,0.28));
+    box-shadow: 0 0 16px rgba(201,164,92,0.4);
+    transform: translateY(-50%) scale(1.08);
+  }
+  .nav-btn.prev { left: -60px; }
+  .nav-btn.next { right: -60px; }
+
+  /* ===== AI 色彩还原按钮 ===== */
+  .ai-row {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    margin-top: 22px;
+  }
+  .ai-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 26px;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(201,164,92,0.12), rgba(201,164,92,0.03));
+    color: var(--gold-bright);
+    font-family: var(--serif);
+    font-size: 14px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: box-shadow 0.25s ease, background 0.25s ease;
+  }
+  .ai-btn:hover { box-shadow: 0 0 18px rgba(201,164,92,0.4); }
+  .ai-btn.on {
+    background: linear-gradient(180deg, rgba(201,164,92,0.45), rgba(140,105,45,0.35));
+    box-shadow: 0 0 22px rgba(232,200,132,0.55), inset 0 0 10px rgba(255,235,180,0.3);
+  }
+  .ai-btn .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+  }
+  .ai-btn.on .dot {
+    background: #7dffb0;
+    box-shadow: 0 0 8px #7dffb0;
+  }
+
+  /* 还原后的色彩效果 */
+  .hero-img-wrap img.restored {
+    filter: saturate(1.65) contrast(1.08) brightness(1.03);
+  }
+  #lightboxImg.restored { filter: saturate(1.65) contrast(1.08) brightness(1.03); }
+
+  /* 还原扫描动画 */
+  .hero-img-wrap.restoring::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 34%;
+    left: -40%;
+    z-index: 5;
+    background: linear-gradient(90deg, transparent, rgba(125,255,176,0.28), rgba(255,240,190,0.35), rgba(125,255,176,0.28), transparent);
+    animation: scan 0.9s ease-in-out forwards;
+    pointer-events: none;
+  }
+  @keyframes scan {
+    to { left: 110%; }
+  }
+
+  /* ===== 全屏放大查看 ===== */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    background: rgba(5, 4, 2, 0.93);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    backdrop-filter: blur(6px);
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 92vw;
+    max-height: 88vh;
+    border: 10px solid #1a1207;
+    outline: 1px solid var(--gold-dim);
+    box-shadow: 0 30px 90px rgba(0,0,0,0.9);
+    transition: filter 0.5s ease;
+  }
+  .lightbox .lb-hint {
+    position: absolute;
+    bottom: 26px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--text-sub);
+  }
+  .lightbox .lb-caption {
+    position: absolute;
+    top: 26px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 15px;
+    letter-spacing: 4px;
+    color: var(--gold-bright);
+  }
+
+  .intro {
+    margin-top: 34px;
+    text-align: center;
+  }
+  .intro h2 {
+    font-size: 22px;
+    letter-spacing: 6px;
+    color: var(--gold-bright);
+    margin-bottom: 6px;
+  }
+  .intro .rule {
+    width: 70px; height: 1px;
+    background: var(--gold);
+    margin: 12px auto 22px;
+    position: relative;
+  }
+  .intro .rule::after {
+    content: "❖";
+    position: absolute;
+    top: -9px; left: 50%;
+    transform: translateX(-50%);
+    color: var(--gold);
+    font-size: 12px;
+    background: var(--bg-deep);
+    padding: 0 8px;
+  }
+  .intro p {
+    max-width: 780px;
+    margin: 0 auto;
+    font-size: 15.5px;
+    line-height: 2.1;
+    color: var(--text-sub);
+    text-align: justify;
+    text-align-last: center;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+  }
+  .meta-item { text-align: center; }
+  .meta-item .num {
+    font-size: 22px;
+    color: var(--gold-bright);
+    letter-spacing: 1px;
+  }
+  .meta-item .label {
+    margin-top: 4px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--text-sub);
+  }
+
+  /* ===== 藏品陈列区 ===== */
+  .gallery-section { margin-top: 66px; }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+  .section-head .line { flex: 1; height: 1px; background: var(--gold-dim); }
+  .section-head h2 {
+    font-size: 20px;
+    letter-spacing: 6px;
+    color: var(--gold-bright);
+    white-space: nowrap;
+  }
+
+  .thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+  .thumb {
+    position: relative;
+    cursor: pointer;
+    border: 1px solid var(--gold-dim);
+    background: var(--bg-card);
+    padding: 5px;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .thumb:hover {
+    transform: translateY(-3px);
+    border-color: var(--gold);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.5);
+  }
+  .thumb.active {
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 0 1px var(--gold-bright), 0 8px 22px rgba(201,164,92,0.18);
+  }
+  .thumb.active::after {
+    content: "◈ 展出中";
+    position: absolute;
+    top: 9px; left: 9px;
+    padding: 2px 8px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #12100c;
+    background: var(--gold-bright);
+    z-index: 2;
+  }
+  .thumb .img-box {
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #0d0b08;
+  }
+  .thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .thumb:hover img { transform: scale(1.07); }
+  .thumb .name {
+    margin-top: 6px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--text-sub);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .thumb.active .name { color: var(--gold-bright); }
+
+  /* ===== 页脚 ===== */
+  footer {
+    border-top: 1px solid var(--gold-dim);
+    text-align: center;
+    padding: 26px 20px 34px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--text-sub);
+  }
+  footer .orn { color: var(--gold); margin: 0 10px; }
+
+  @media (max-width: 560px) {
+    h1 { letter-spacing: 5px; }
+    .thumbs { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+    .hero { padding: 60px 18px 30px; }
+    .pedestal { max-width: 100%; }
+    .ped-plaque { letter-spacing: 2px; padding: 4px 12px; }
+    .nav-btn { width: 36px; height: 36px; font-size: 17px; }
+    .nav-btn.prev { left: -6px; }
+    .nav-btn.next { right: -6px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>花山岩画数字博物馆</h1>
+  <div class="subtitle">左江花山岩画文化景观 · 骆越先民的赭红史诗</div>
+  <div class="badge"><span class="star">★</span> 世界文化遗产 · 2016 年列入《世界遗产名录》<span class="star">★</span></div>
+</header>
+
+<main>
+  <!-- 展柜主图展示区 -->
+  <section class="hero">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+
+    <!-- 顶部射灯 -->
+    <div class="spotlight">
+      <div class="glow"></div>
+      <div class="beam"></div>
+      <div class="lamp"></div>
+    </div>
+
+    <!-- 深色画框 -->
+    <div class="frame">
+      <div class="nav-btn prev" id="btnPrev" title="上一张">‹</div>
+      <div class="nav-btn next" id="btnNext" title="下一张">›</div>
+      <div class="hero-img-wrap" id="heroWrap" title="点击放大查看">
+        <img id="heroImg" src="" alt="花山岩画主展示图">
+        <div class="hero-index" id="heroIndex">藏品 01</div>
+        <div class="hero-caption" id="heroCaption"></div>
+        <!-- 玻璃反光 -->
+        <div class="glass"></div>
+      </div>
+    </div>
+
+    <!-- AI 色彩还原 -->
+    <div class="ai-row">
+      <button class="ai-btn" id="aiBtn"><span class="dot"></span><span class="ai-text">AI 色彩还原</span></button>
+    </div>
+
+    <!-- 展柜台座 -->
+    <div class="pedestal">
+      <div class="ped-top"></div>
+      <div class="ped-body">
+        <div class="ped-plaque">花山岩画 · 左江流域 · 战国—东汉</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 文物简介 -->
+  <section class="intro">
+    <h2>文 物 简 介</h2>
+    <div class="rule"></div>
+    <p id="introText">
+      花山岩画位于广西崇左市左江流域，绘于战国至东汉时期，距今约两千余年，是骆越先民举行盛大祭祀活动留下的遗迹。岩画以赭红色赤铁矿颜料绘制于临江陡峭的崖壁之上，画面高达数十米，人物形象双手上举、双腿叉开作蛙形舞姿，配以铜鼓、犬、船等图像，气势恢宏。其中宁明花山岩画画面宽约 170 余米、高约 40 余米，现存图像 1900 余个，是世界单幅面积最大的岩画，被誉为「崖壁上的敦煌」。2016 年 7 月，「左江花山岩画文化景观」列入《世界遗产名录》，填补了中国岩画类世界遗产的空白。
+    </p>
+    <div class="meta-row">
+      <div class="meta-item"><div class="num">约2000年</div><div class="label">绘制年代</div></div>
+      <div class="meta-item"><div class="num">1900+</div><div class="label">图像数量</div></div>
+      <div class="meta-item"><div class="num">170余米</div><div class="label">画面宽度</div></div>
+      <div class="meta-item"><div class="num">38处</div><div class="label">遗产点</div></div>
+    </div>
+  </section>
+
+  <!-- 藏品陈列区 -->
+  <section class="gallery-section">
+    <div class="section-head">
+      <div class="line"></div>
+      <h2>藏 品 陈 列</h2>
+      <div class="line"></div>
+    </div>
+    <div class="thumbs" id="thumbs"></div>
+  </section>
+</main>
+
+<footer>
+  花山岩画数字博物馆<span class="orn">◆</span>数字典藏 · 文化传承<span class="orn">◆</span>广西 · 左江流域
+</footer>
+
+<!-- 全屏放大查看遮罩 -->
+<div class="lightbox" id="lightbox">
+  <div class="lb-caption" id="lbCaption"></div>
+  <img id="lightboxImg" src="" alt="放大查看">
+  <div class="lb-hint">点击任意位置或按 ESC 关闭 · ←/→ 切换藏品</div>
+</div>
+
+<script>
+  // ===== 藏品数据（images 文件夹素材）=====
+  const COLLECTION = [
+    { file: "cliff-paintings-main-view.jpg",    name: "花山崖壁全景" },
+    { file: "cliff-paintings-overview.jpg",     name: "岩画远眺" },
+    { file: "chief-on-beast-red-pigment.jpg",   name: "首领骑兽图" },
+    { file: "chief-riding-beast.jpg",           name: "首领乘骑" },
+    { file: "chief-on-beast-closeup.png",       name: "首领骑兽细部" },
+    { file: "chief-figure-red.png",             name: "赭红首领像" },
+    { file: "group-dance-cliff.jpg",            name: "群体蛙形舞" },
+    { file: "group-dance-composition.png",      name: "群舞构图" },
+    { file: "ritual-scene.png",                 name: "祭祀场景" },
+    { file: "warfare-scene-1.png",              name: "征战图·其一" },
+    { file: "warfare-scene-2.png",              name: "征战图·其二" },
+    { file: "silhouette-figures-with-weapon.jpg", name: "持械人像" },
+    { file: "figure-with-crossbar.jpg",         name: "佩刀正身人" },
+    { file: "green-figure-with-knife.png",      name: "执刀人像" },
+    { file: "single-figure-closeup.jpg",        name: "正身人像特写" },
+    { file: "drum-sun-pattern.jpg",             name: "铜鼓太阳纹" },
+    { file: "blue-drum-pattern.png",            name: "铜鼓纹样" },
+    { file: "drum-vessels-blue.png",            name: "铜鼓列阵" },
+    { file: "magenta-figure-drum.png",          name: "击鼓人像" },
+    { file: "artifact-symbols-collection.png",  name: "图像符号集萃" },
+    { file: "colorful-pictograph-illustration.jpg", name: "彩绘图像摹本" },
+    { file: "red-pigment-detail-collage.png",   name: "赤铁矿颜料细部" },
+    { file: "red-animal-silhouette.png",        name: "赭红兽形" },
+    { file: "brown-animal-silhouette.png",      name: "犬形剪影" },
+    { file: "small-dark-animal.png",            name: "兽形小像" },
+    { file: "bird-silhouette.jpg",              name: "飞鸟图" },
+    { file: "pale-background-with-birds.png",   name: "群鸟图" },
+    { file: "cliff-art-detail-1.png",           name: "崖壁细部·壹" },
+    { file: "cliff-art-detail-2.png",           name: "崖壁细部·贰" },
+    { file: "cliff-art-detail-3.png",           name: "崖壁细部·叁" },
+    { file: "cliff-art-detail-4.png",           name: "崖壁细部·肆" },
+    { file: "cliff-art-detail-5.png",           name: "崖壁细部·伍" },
+    { file: "cliff-panorama-faded.png",         name: "斑驳崖壁长卷" },
+    { file: "tourists-photographing-cliff.png", name: "观览花山" },
+    { file: "conservation-survey-team.png",     name: "遗产监测调查" },
+    { file: "site-inspection-visit.png",        name: "遗址考察" },
+    { file: "school-children-copying-petroglyphs.png", name: "岩画摹写课堂" }
+  ];
+
+  const heroImg     = document.getElementById("heroImg");
+  const heroIndex   = document.getElementById("heroIndex");
+  const heroCaption = document.getElementById("heroCaption");
+  const thumbsBox   = document.getElementById("thumbs");
+  const introText   = document.getElementById("introText");
+  const heroWrap    = document.getElementById("heroWrap");
+  const btnPrev     = document.getElementById("btnPrev");
+  const btnNext     = document.getElementById("btnNext");
+  const aiBtn       = document.getElementById("aiBtn");
+  const aiText      = aiBtn.querySelector(".ai-text");
+  const lightbox    = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightboxImg");
+  const lbCaption   = document.getElementById("lbCaption");
+
+  const INTRO_DEFAULT = introText.textContent.trim();
+  let current = 0;
+
+  function srcOf(i) { return "images/" + COLLECTION[i].file; }
+
+  function show(i, animate) {
+    current = (i + COLLECTION.length) % COLLECTION.length;
+    const item = COLLECTION[current];
+    const apply = () => {
+      heroImg.src = srcOf(current);
+      heroImg.alt = item.name;
+      heroImg.onload = () => {
+        heroImg.classList.remove("fading");
+        heroImg.classList.add("zoom");
+      };
+      heroIndex.textContent = "藏品 " + String(current + 1).padStart(2, "0");
+      heroCaption.textContent = item.name;
+      document.querySelectorAll(".thumb").forEach((el, k) =>
+        el.classList.toggle("active", k === current));
+    };
+    if (animate) {
+      heroImg.classList.add("fading");
+      setTimeout(apply, 300);
+    } else {
+      apply();
+    }
+  }
+
+  // 生成缩略图
+  COLLECTION.forEach((item, i) => {
+    const el = document.createElement("div");
+    el.className = "thumb";
+    el.title = item.name;
+    el.innerHTML =
+      '<div class="img-box"><img loading="lazy" src="' + srcOf(i) + '" alt="' + item.name + '"></div>' +
+      '<div class="name">' + item.name + '</div>';
+    el.addEventListener("click", () => { if (i !== current) { show(i, true); syncLightbox(); } });
+    thumbsBox.appendChild(el);
+  });
+
+  // ===== 上一张 / 下一张按钮 =====
+  btnPrev.addEventListener("click", (e) => { e.stopPropagation(); show(current - 1, true); syncLightbox(); });
+  btnNext.addEventListener("click", (e) => { e.stopPropagation(); show(current + 1, true); syncLightbox(); });
+
+  // ===== 全屏放大查看 =====
+  function openLightbox() {
+    lightboxImg.src = srcOf(current);
+    lightboxImg.classList.toggle("restored", restored);
+    lbCaption.textContent = COLLECTION[current].name;
+    lightbox.classList.add("open");
+  }
+  function closeLightbox() { lightbox.classList.remove("open"); }
+  function syncLightbox() {
+    if (lightbox.classList.contains("open")) {
+      lightboxImg.src = srcOf(current);
+      lbCaption.textContent = COLLECTION[current].name;
+    }
+  }
+  heroWrap.addEventListener("click", openLightbox);
+  lightbox.addEventListener("click", closeLightbox);
+
+  // ===== AI 色彩还原 =====
+  let restored = false;
+  aiBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    restored = !restored;
+    aiBtn.classList.toggle("on", restored);
+    aiText.textContent = restored ? "还原效果已开启" : "AI 色彩还原";
+    heroImg.classList.toggle("restored", restored);
+    lightboxImg.classList.toggle("restored", restored);
+    if (restored) {
+      heroWrap.classList.add("restoring");
+      setTimeout(() => heroWrap.classList.remove("restoring"), 950);
+    }
+  });
+
+  // 键盘操作：ESC 关闭放大，←/→ 切换
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { closeLightbox(); return; }
+    if (e.key === "ArrowRight") { show(current + 1, true); syncLightbox(); }
+    if (e.key === "ArrowLeft")  { show(current - 1, true); syncLightbox(); }
+  });
+
+  show(0, false);
+</script>
+
+</body>
+</html>
